@@ -1,0 +1,9 @@
+.env
+.env.*
+*.env
+*.env.*
+services/web/.env
+services/web/.env.*
+*.env.prod
+*.env.dev
+*.env.prod.db
