@@ -18,9 +18,10 @@ services:
       - postgres_data:/var/lib/postgresql/data/
       - ./services/postgres/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     environment:
-      - POSTGRES_USER=hello_flask
-      - POSTGRES_PASSWORD=hello_flask
-      - POSTGRES_DB=hello_flask_dev
-
+      - POSTGRES_USER=twitter
+      - POSTGRES_PASSWORD=twitter
+      - POSTGRES_DB=twitter_dev
+    ports:
+      - 5433:5432 
 volumes:
   postgres_data:
