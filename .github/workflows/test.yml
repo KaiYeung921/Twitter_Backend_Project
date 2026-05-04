@@ -1,0 +1,33 @@
+name: CI
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create env files
+        run: |
+          echo "FLASK_APP=project/__init__.py" > .env.dev
+          echo "FLASK_DEBUG=1"                >> .env.dev
+          echo "DATABASE_URL=postgresql://twitter:twitter@db/twitter_dev" >> .env.dev
+
+      - name: Build and start containers
+        run: docker compose up -d --build
+
+      - name: Wait for web to be healthy
+        run: |
+          for i in $(seq 1 15); do
+            docker compose ps
+            curl -sf http://localhost:1080/ && echo "OK" && exit 0
+            sleep 2
+          done
+          echo "Service never became healthy"
+          docker compose logs
+          exit 1
+
+      - name: Tear down
+        if: always()
+        run: docker compose down
