@@ -3,6 +3,7 @@
 import os
 import psycopg2
 import psycopg2.extras
+import psycopg2.errors
 import hashlib
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
@@ -88,3 +89,67 @@ def login():
             return render_template("login.html", error="Invalid username or password")
 
     return render_template("login.html", error=None)
+
+
+@app.route("/create_account", methods=["GET", "POST"])
+def create_account():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        password2 = request.form["password2"]
+
+        if password != password2:
+            return render_template("create_account.html", error="Passwords do not match")
+
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+
+        conn = get_db()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "INSERT INTO users (screen_name) VALUES (%s) RETURNING id_users;",
+                (username,)
+            )
+            user_id = cur.fetchone()["id_users"]
+            cur.execute(
+                "INSERT INTO credentials (id_users, password_hash) VALUES (%s, %s);",
+                (user_id, password_hash)
+            )
+            conn.commit()
+        except psycopg2.errors.UniqueViolation:
+            conn.rollback()
+            return render_template("create_account.html", error="Username already exists")
+        finally:
+            cur.close()
+            conn.close()
+
+        session["id_users"] = user_id
+        session["screen_name"] = username
+        return redirect(url_for("index"))
+
+    return render_template("create_account.html", error=None)
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
+
+@app.route("/create_message", methods=["GET", "POST"])
+def create_message():
+    if not session.get("id_users"):
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        text = request.form["text"]
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO tweets (id_users, text) VALUES (%s, %s);",
+            (session["id_users"], text)
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for("index"))
+
+    return render_template("create_message.html", error=None)

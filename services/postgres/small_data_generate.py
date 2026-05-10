@@ -50,7 +50,7 @@ def main():
         user_id = cur.fetchone()[0]
         user_ids.append(user_id)
         cur.execute(
-            "INSERT INTO credentials (id_users, password) VALUES (%s, %s);",
+            "INSERT INTO credentials (id_users, password_hash) VALUES (%s, %s);",
             (user_id, hash_password("password123"))
         )
 

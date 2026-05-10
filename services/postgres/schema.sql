@@ -13,7 +13,7 @@ CREATE TABLE tweets(
 
 CREATE TABLE credentials(
     id_users BIGINT PRIMARY KEY REFERENCES users(id_users),
-    password TEXT NOT NULL
+    password_hash TEXT NOT NULL
 );
 
 CREATE INDEX idx_tweets_created_at ON tweets(created_at DESC);

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Create Tweet</h1>
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+    <form method="POST" action="/create_message">
+        <label>Message</label><br>
+        <textarea name="text" rows="4" cols="50"></textarea><br><br>
+        <button type="submit">Tweet</button>
+    </form>
+{% endblock %}
