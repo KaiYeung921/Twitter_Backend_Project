@@ -6,8 +6,12 @@
 <body>
     <nav>
         <a href="/">Home</a>
-        <a href="/">Home</a>
         <a href="/search">Search</a>
+        {% if session.get("screen_name") %}
+            <span>@{{ session["screen_name"] }}</span>
+        {% else %}
+            <a href="/login">Login</a>
+        {% endif %}
     </nav>
     <hr>
     {% block content %}{% endblock %}

@@ -3,9 +3,12 @@
 import os
 import psycopg2
 import psycopg2.extras
-from flask import Flask, render_template, request
+import hashlib
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
+
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -56,3 +59,32 @@ def serach():
         cur.close()
         conn.close()
     return render_template("search.html", tweets=tweets, query=query, page=page)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        password_hash = hashlib.sha256(password.encode()).hexdigest()
+
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT users.id_users, users.screen_name
+            FROM users
+            JOIN credentials ON users.id_users = credentials.id_users
+            WHERE users.screen_name = %s
+            AND credentials.password_hash = %s
+        """, (username, password_hash))
+        user = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        if user:
+            session["id_users"] = user["id_users"]
+            session["screen_name"] = user["screen_name"]
+            return redirect(url_for("index"))
+        else:
+            return render_template("login.html", error="Invalid username or password")
+
+    return render_template("login.html", error=None)
