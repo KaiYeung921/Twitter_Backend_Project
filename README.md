@@ -1,5 +1,5 @@
 # Flask on Docker
-
+[![Continuous Integration](https://github.com/KaiYeung921/Twitter_Backend_Project/actions/workflows/main.yml/badge.svg)](https://github.com/KaiYeung921/Twitter_Backend_Project/actions/workflows/main.yml)
 
 
 ## Overview
