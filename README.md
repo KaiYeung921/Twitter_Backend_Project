@@ -1,43 +1,25 @@
-# Flask on Docker
+# Twitter Clone - Big Data Final Project
 [![CI](https://github.com/KaiYeung921/Twitter_Backend_Project/actions/workflows/test.yml/badge.svg)](https://github.com/KaiYeung921/Twitter_Backend_Project/actions/workflows/test.yml)
 
 
 ## Overview
-This repository contains a containerized Flask application using a modified Instagram tech stack. The project utilizes **Gunicorn** as the production web server, **Nginx** as a reverse proxy to handle requests and serve static/media files, and **PostgreSQL** for persistent data storage. All services are orchestrated using Docker Compose to ensure a consistent environment from development to production.
+A full-stack Twitter clone built from scratch as the final project for CMC's Big Data course. The goal was to apply everything learned in the course into one production-ready web application — from database design to containerized deployment.
 
-## Demo
-![Application Demo](Example.gif)
+The core engineering challenge was making every page load in milliseconds against a database with over 1,000,000 rows. This required index design, query optimization, and understanding Postgres.
+
+
+## Tech Stack
+- **Flask** — Python web framework
+- **PostgreSQL** — relational database with advanced indexing
+- **psycopg2** — raw SQL queries (no ORM) for full control over performance
+- **Docker + Docker Compose** — containerized dev and production environments
+- **Nginx + Gunicorn** — web serving
+- **GitHub Actions** — CI/CD pipeline that builds and tests containers on every push
+
 
 ## Build Instructions
 
-### 1. Prerequisites
-* Docker and Docker Compose installed.
-* A `.env.prod.db` file (and other required `.env` files) populated with your credentials. **Note: These are excluded from the repository for security.**
-
-### 2. Environment Configuration
-For security reasons, production credentials are not stored in this repository. You must create the following files in the root directory before launching the containers to avoid a `-2` point total penalty:
-
-* `.env.prod`: General production settings (e.g., `FLASK_ENV=production`).
-* `.env.prod.db`: Database credentials including `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB`.
-
-### 3. Service Orchestration (CLI Commands)
-From your terminal, navigate to the project root and execute the following sequence:
-
-**A. Build and Start the Stack**
-This command builds the custom images for Nginx and Flask and starts all services in the background:
+### Development
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
-Then:
-```bash
-docker compose -f docker-compose.prod.yml exec web python manage.py create_db
-```
-### 4. Accessing the Servies
-The application is exposed via Nginx on the host port specified in your compose file (default is 1080):
-
-Main Application Interface: http://localhost:1080
-
-Static Assets: Verify Nginx is serving static files at http://localhost:1080/static/hello.txt.
-
-Media Uploads: View uploaded media files at http://localhost:1080/media/<filename>.
+docker compose up -d --build
 
