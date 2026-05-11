@@ -44,18 +44,18 @@ def serach():
         conn = get_db()
         cur = conn.cursor()
         cur.execute("""
-            SELECT
-                users.screen_name,
-                tweets.created_at,
-                ts_headline('english', tweets.text, to_tsquery('english', %s),
-                    'HighlightAll=true, StartSel=<mark>, StopSel=</mark>') AS text,
-                ts_rank(to_tsvector('english', tweets.text), to_tsquery('english', %s)) AS rank
-            FROM tweets
-            JOIN users ON tweets.id_users = users.id_users
-            WHERE to_tsvector('english', tweets.text) @@ to_tsquery('english', %s)
-            ORDER BY rank DESC
-            LIMIT 20 OFFSET %s
-        """, (query, query, query, offset))
+    SELECT
+        users.screen_name,
+        tweets.created_at,
+        ts_headline('english', tweets.text, to_tsquery('english', %s),
+            'HighlightAll=true, StartSel=<mark>, StopSel=</mark>') AS text,
+        ts_rank(tweets.text_tsv, to_tsquery('english', %s)) AS rank
+    FROM tweets
+    JOIN users ON tweets.id_users = users.id_users
+    WHERE tweets.text_tsv @@ to_tsquery('english', %s)
+    ORDER BY rank DESC
+    LIMIT 20 OFFSET %s
+""", (query, query, query, offset))
         tweets = cur.fetchall()
         cur.close()
         conn.close()
