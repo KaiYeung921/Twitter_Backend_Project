@@ -6,7 +6,9 @@
     {% endif %}
     <form method="POST" action="/create_message">
         <label>Message</label><br>
-        <textarea name="text" rows="4" cols="50"></textarea><br><br>
+        <textarea name="text" rows="4" cols="50"></textarea>
+        <br><small>280 characters Max</small><br>
+        <br>
         <button type="submit">Tweet</button>
     </form>
 {% endblock %}

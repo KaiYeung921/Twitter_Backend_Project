@@ -6,11 +6,11 @@
     {% endif %}
     <form method="POST" action="/create_account">
         <label>Username</label><br>
-        <input type="text" name="username"><br><br>
+        <input type="text" name="username" maxlength="50"><br><br>
         <label>Password</label><br>
-        <input type="password" name="password"><br><br>
+        <input type="password" name="password" maxlength="128"><br><br>
         <label>Confirm Password</label><br>
-        <input type="password" name="password2"><br><br>
+        <input type="password" name="password2" maxlength="128"><br><br>
         <button type="submit">Create Account</button>
     </form>
 {% endblock %}

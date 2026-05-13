@@ -13,8 +13,10 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key")
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+
 def get_db():
     return psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+
 
 @app.route("/")
 def index():
@@ -34,12 +36,16 @@ def index():
     conn.close()
     return render_template("index.html", tweets=tweets, page=page)
 
+
 @app.route("/search")
 def serach():
     query = request.args.get("q", "")
     page = request.args.get("page", 1, type=int)
     offset = (page - 1) * 20
     tweets = []
+
+    if len(query) > 100:
+        query = query[:100]
     if query:
         conn = get_db()
         cur = conn.cursor()
@@ -47,12 +53,12 @@ def serach():
     SELECT
         users.screen_name,
         tweets.created_at,
-        ts_headline('english', tweets.text, to_tsquery('english', %s),
+        ts_headline('english', tweets.text, plainto_tsquery('english', %s),
             'HighlightAll=true, StartSel=<mark>, StopSel=</mark>') AS text,
-        ts_rank(tweets.text_tsv, to_tsquery('english', %s)) AS rank
+        ts_rank(tweets.text_tsv, plainto_tsquery('english', %s)) AS rank
     FROM tweets
     JOIN users ON tweets.id_users = users.id_users
-    WHERE tweets.text_tsv @@ to_tsquery('english', %s)
+    WHERE tweets.text_tsv @@ plainto_tsquery('english', %s)
     ORDER BY rank DESC
     LIMIT 20 OFFSET %s
 """, (query, query, query, offset))
@@ -60,6 +66,7 @@ def serach():
         cur.close()
         conn.close()
     return render_template("search.html", tweets=tweets, query=query, page=page)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -94,15 +101,22 @@ def login():
 @app.route("/create_account", methods=["GET", "POST"])
 def create_account():
     if request.method == "POST":
-        username = request.form["username"]
+        username = request.form["username"].strip()
         password = request.form["password"]
         password2 = request.form["password2"]
 
+        if not username:
+            return render_template("create_account.html", error="Username cannot be empty")
+        if len(username) > 50:
+            return render_template("create_account.html", error="Username must be 50 characters or less")
+        if not password:
+            return render_template("create_account.html", error="Password cannot be empty")
+        if len(password) < 6:
+            return render_template("create_account.html", error="Password must be at least 6 characters")
         if password != password2:
             return render_template("create_account.html", error="Passwords do not match")
 
         password_hash = hashlib.sha256(password.encode()).hexdigest()
-
         conn = get_db()
         cur = conn.cursor()
         try:
@@ -129,10 +143,12 @@ def create_account():
 
     return render_template("create_account.html", error=None)
 
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("index"))
+
 
 @app.route("/create_message", methods=["GET", "POST"])
 def create_message():
@@ -140,7 +156,11 @@ def create_message():
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        text = request.form["text"]
+        text = request.form["text"].strip()
+        if not text:
+            return render_template("create_message.html", error="Tweet cannot be empty")
+        if len(text) > 280:
+            return render_template("create_message.html", error="Tweet must be 280 characters or less")
         conn = get_db()
         cur = conn.cursor()
         cur.execute(

@@ -2,7 +2,7 @@
 {% block content %}
     <h1>Search</h1>
     <form method="GET" action="/search">
-        <input type="text" name="q" value="{{ query }}">
+        <input type="text" name="q" value="{{ query }}" maxlength="100">
         <button type="submit">Search</button>
     </form>
 
